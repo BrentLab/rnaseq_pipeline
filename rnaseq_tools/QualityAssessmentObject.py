@@ -12,12 +12,14 @@ import abc
 # turn off SettingWithCopyWarning in pandas
 pd.options.mode.chained_assignment = None
 
+
 class QualityAssessmentObject(OrganismData):
 
     def __init__(self, expected_attributes=None, **kwargs):
         # add expected attributes to super._attributes
         self._add_expected_attributes = ['bam_file_list', 'count_file_list', 'novoalign_log_list',
-                                         'coverage_check_flag','query_path', 'standardized_database_df', 'qual_assess_dir_path']
+                                         'coverage_check_flag', 'query_path', 'standardized_database_df',
+                                         'qual_assess_dir_path']
         # This is a method of adding expected attributes to StandardData from StandardData children
         if isinstance(expected_attributes, list):
             self._add_expected_attributes.extend(expected_attributes)
@@ -44,9 +46,9 @@ class QualityAssessmentObject(OrganismData):
             self.query_df = utils.readInDataframe(self.query_path)
             try:
                 if not len(self.query_df[self.query_df.fastqFileName.isnull()]) == 0:
-                    raise ValueError('EmptyFastqFileNamesIn %s' %self.query_path)
+                    raise ValueError('EmptyFastqFileNamesIn %s' % self.query_path)
             except ValueError:
-                self.logger.critical('Removing rows with null fastqFileNames from %s' %self.query_path)
+                self.logger.critical('Removing rows with null fastqFileNames from %s' % self.query_path)
                 self.query_df = self.query_df[~self.query_df.fastqFileName.isnull()]
         except ValueError:
             self.logger.critical('query_path not valid')
@@ -78,16 +80,20 @@ class QualityAssessmentObject(OrganismData):
         """
             format columns which are fractions of library size (this will be common to all organisms)
         """
-        self.qual_assess_df['MULTI_MAP_PERCENT'] = self.qual_assess_df['MULTI_MAP'] / self.qual_assess_df['LIBRARY_SIZE'].astype(
+        self.qual_assess_df['MULTI_MAP_PERCENT'] = self.qual_assess_df['MULTI_MAP'] / self.qual_assess_df[
+            'LIBRARY_SIZE'].astype(
             'float')
-        self.qual_assess_df['NO_MAP_PERCENT'] = self.qual_assess_df['NO_MAP'] / self.qual_assess_df['LIBRARY_SIZE'].astype('float')
+        self.qual_assess_df['NO_MAP_PERCENT'] = self.qual_assess_df['NO_MAP'] / self.qual_assess_df[
+            'LIBRARY_SIZE'].astype('float')
         self.qual_assess_df['HOMOPOLY_FILTER_PERCENT'] = self.qual_assess_df['HOMOPOLY_FILTER'] / self.qual_assess_df[
             'LIBRARY_SIZE'].astype('float')
-        self.qual_assess_df['READ_LENGTH_FILTER_PERCENT'] = self.qual_assess_df['READ_LENGTH_FILTER'] / self.qual_assess_df[
-            'LIBRARY_SIZE'].astype('float')
+        self.qual_assess_df['READ_LENGTH_FILTER_PERCENT'] = self.qual_assess_df['READ_LENGTH_FILTER'] / \
+                                                            self.qual_assess_df[
+                                                                'LIBRARY_SIZE'].astype('float')
         # htseq output not_aligned_total_percent is no_map + homopoly_filter + read_length filter. present as fraction of library_size
-        self.qual_assess_df['NOT_ALIGNED_TOTAL_PERCENT'] = self.qual_assess_df['NOT_ALIGNED_TOTAL'] / self.qual_assess_df[
-            'LIBRARY_SIZE'].astype('float')
+        self.qual_assess_df['NOT_ALIGNED_TOTAL_PERCENT'] = self.qual_assess_df['NOT_ALIGNED_TOTAL'] / \
+                                                           self.qual_assess_df[
+                                                               'LIBRARY_SIZE'].astype('float')
 
     def extractInfoFromQuerySheet(self, sample_name, extract_column):
         """ TODO: REMOVE THIS AND REPLACE WITH FUNCTION IN UTILS IN OTHER CODE
@@ -100,10 +106,12 @@ class QualityAssessmentObject(OrganismData):
             :returns: value extracted from query_df based on sample name and extract column
         """
         try:
-            extract_value = list(self.query_df[self.query_df['fastqFileName'].str.contains(sample_name + '.fastq.gz')][extract_column])[
+            extract_value = \
+            list(self.query_df[self.query_df['fastqFileName'].str.contains(sample_name + '.fastq.gz')][extract_column])[
                 0]
         except AttributeError:
-            self.logger.error("failure in extractInfoFromQuerySheet. sample_name: %s extract_column: %s" %(sample_name, extract_column))
+            self.logger.error("failure in extractInfoFromQuerySheet. sample_name: %s extract_column: %s" % (
+            sample_name, extract_column))
             print('You must pass a query df')
 
         return str(extract_value)
@@ -265,7 +273,8 @@ class QualityAssessmentObject(OrganismData):
                 bam_path, rRNA_region)
         # as long as this is the first function called that needs an index, this will error check that samtools index has been run
         try:
-            self.logger.debug('samtools cmd to extract primary multi alignment reads to rRNA: %s' %cmd_primary_multi_alignment_rRNA)
+            self.logger.debug(
+                'samtools cmd to extract primary multi alignment reads to rRNA: %s' % cmd_primary_multi_alignment_rRNA)
             num_primary_alignment_rRNA = int(subprocess.getoutput(cmd_primary_multi_alignment_rRNA))
         except ValueError:
             sys.exit('You must first index the alignment files with samtools index')
@@ -276,7 +285,7 @@ class QualityAssessmentObject(OrganismData):
             cmd_unique_rRNA = 'samtools view -F 16 %s %s | grep -v ZS:Z:R | wc -l' % (bam_path, rRNA_region)
         else:
             cmd_unique_rRNA = 'samtools view %s %s | grep -v ZS:Z:R | wc -l' % (bam_path, rRNA_region)
-        self.logger.debug('samtools cmd to extract unique alignment reads to rRNA: %s' %cmd_unique_rRNA)
+        self.logger.debug('samtools cmd to extract unique alignment reads to rRNA: %s' % cmd_unique_rRNA)
         unique_rRNA = int(subprocess.getoutput(cmd_unique_rRNA))
 
         # add for total rRNA
@@ -302,7 +311,7 @@ class QualityAssessmentObject(OrganismData):
             # no -s means this will count intersects regardless of strand
             bedtools_cmd = 'bedtools intersect -f .90 -a %s -b %s | samtools view | grep -v ZS:Z:R | wc -l' % (
                 bam_path, trna_ncrna_annotation_gff)
-        self.logger.info('bedtools cmd: %s' %bedtools_cmd)
+        self.logger.info('bedtools cmd: %s' % bedtools_cmd)
 
         # extract unique_alignments to nc and t RNA
         unique_align_tRNA_ncRNA = int(subprocess.getoutput(bedtools_cmd))
@@ -336,7 +345,8 @@ class QualityAssessmentObject(OrganismData):
         """
         raise NotImplementedError
 
-    def calculatePercentFeatureCoverage(self, feature, genotype, annotation_path, bam_file, num_bases_in_region=None):
+    def calculatePercentFeatureCoverage(self, feature, genotype, annotation_path, bam_file, read_strand=None,
+                                        num_bases_in_region=None):
         """
             Calculate percent of given feature (regions summed, so all exon in gene, eg) of a gene (exon, CDS, etc) covered by 1 or more reads
             :param feature: annotation feature over which to take percentage, eg all exons in gene, or all CDS
@@ -344,13 +354,16 @@ class QualityAssessmentObject(OrganismData):
             :param annotation_path: path to annotation file
             :param bam_file: a sorted, indexed alignment file (.bam)
             :param num_bases_in_region: pass number of bases in the region directly, this will skip the step of calculating this number from the annotation file
+            :param read_strand: default None, which will calculate coverage of reads on both strands over locus. options are Forward or Reverse. TODO: IMPLEMENT IN FUNCTION
             :returns: the fraction of bases in the (summed over the number of features in the gene) feature region covered by at least one read
         """
+        if read_strand not in [None, "forward", "reverse"]:
+            raise ValueError('UnrecognizedReadStrand')
         if not num_bases_in_region:
             # extract number of bases in CDS of given gene. Credit: https://www.biostars.org/p/68283/#390427
             num_bases_in_region_cmd = "grep %s %s | grep %s | bedtools merge | awk -F\'\t\' \'BEGIN{SUM=0}{ SUM+=$3-$2 }END{print SUM}\'" % (
                 genotype, annotation_path, feature)
-            self.logger.info(' num bases in region cmd: %s' %num_bases_in_region_cmd)
+            self.logger.info(' num bases in region cmd: %s' % num_bases_in_region_cmd)
             num_bases_in_region = int(subprocess.getoutput(num_bases_in_region_cmd))
         # extract number of bases with depth != 0
         num_bases_depth_not_zero_cmd = "grep %s %s | grep %s | gff2bed | samtools depth -aa -Q 10 -b - %s | cut -f3 | grep -v 0 | wc -l" % (
@@ -372,8 +385,8 @@ class QualityAssessmentObject(OrganismData):
         try:
             log2cpm_df = utils.readInDataframe(log2cpm_csv_path)
             log2cpm_df = log2cpm_df.set_index('gene_id')
-        except FileNotFoundError:
-            error_msg = 'ERROR: path to log2_cpm not valid: %s' %log2cpm_csv_path
+        except (FileNotFoundError, TypeError):
+            error_msg = 'ERROR: log2cpm file not valid in some way check that it both exists and is in right format (eg, that the gene_id column is right): %s' % log2cpm_csv_path
             self.logger.critical(error_msg)
             sys.exit(error_msg)
 
@@ -384,7 +397,7 @@ class QualityAssessmentObject(OrganismData):
             if column_name not in log2cpm_df.columns:
                 raise AttributeError('ColumnNameNotInLog2CpmSheet')
         except AttributeError:
-            error_msg = '%s not in log2cpm sheet %s' %(column_name, log2cpm_csv_path)
+            error_msg = '%s not in log2cpm sheet %s' % (column_name, log2cpm_csv_path)
             self.logger.critical(error_msg)
             print(error_msg)
         else:
@@ -395,14 +408,15 @@ class QualityAssessmentObject(OrganismData):
                     if gene not in log2cpm_df.index:
                         raise AttributeError('GeneNotInLog2cpmSheet')
             except AttributeError:
-                error_msg = '%s not in log2cpm sheet %s' %(gene, log2cpm_csv_path)
+                error_msg = '%s not in log2cpm sheet %s' % (gene, log2cpm_csv_path)
                 self.logger.critical(error_msg)
                 print(error_msg)
 
             else:
                 # extract log2cpm and return
                 return log2cpm_df.loc[gene, column_name]
-    #TODO: DO NEW LOG2CPM REMAKE BY NEW TREATMENT COLUMNS. INCLUDE STRAINS FOR WILDTYPES
+
+    # TODO: DO NEW LOG2CPM REMAKE BY NEW TREATMENT COLUMNS. INCLUDE STRAINS FOR WILDTYPES
     def foldOverWildtype(self, perturbed_gene, sample_name, log2cpm_path, sample_treatment, sample_timepoint):
         """
             :param perturbed_gene:
@@ -414,12 +428,14 @@ class QualityAssessmentObject(OrganismData):
         """
         # read in median_wt_expression_by_timepoint_treatment_df
         try:
-            median_wt_expression_by_timepoint_treatment_df = utils.readInDataframe(self.median_wt_expression_by_timepoint_treatment)
+            median_wt_expression_by_timepoint_treatment_df = utils.readInDataframe(
+                self.median_wt_expression_by_timepoint_treatment)
             # SET INDEX ON (gene_id, TREATMENT, TIMEPOINT) note: timepoint is read in as an int
-            median_wt_expression_by_timepoint_treatment_df = median_wt_expression_by_timepoint_treatment_df.set_index(['gene_id', 'TREATMENT', 'TIMEPOINT'])
+            median_wt_expression_by_timepoint_treatment_df = median_wt_expression_by_timepoint_treatment_df.set_index(
+                ['gene_id', 'TREATMENT', 'TIMEPOINT'])
         except AttributeError:
             self.logger.critical('genome files config in constructor did not work')
-            print('genome files config in constructor did not work') # set this as attr in crypto organismData
+            print('genome files config in constructor did not work')  # set this as attr in crypto organismData
         # extract overexpression log2_cpm # TODO: READ IN LOG2_CPM AS ATTR OF QUAL ASSESS
         overexpression_log2cpm = float(self.extractLog2cpm(perturbed_gene, sample_name, log2cpm_path))
         # get wildtype log2_cpm from median_wt-expression_by_timepoint_treatment
@@ -466,7 +482,8 @@ class QualityAssessmentObject(OrganismData):
         # create sbatch script for igv shots
         self.createAndSubmitIgvSbatchScript(lookup_file_path, igv_output_dir)
 
-    def createIgvBatchScripts(self, metadata_df, igv_output_dir, batchscript_lookup_full_path = None, organism = "KN99", gene_offset=500, kn99_marker_check=True):
+    def createIgvBatchScripts(self, metadata_df, igv_output_dir, batchscript_lookup_full_path=None, organism="KN99",
+                              gene_offset=500, kn99_marker_check=True):
         """
             See templates/igv_batchscript_example.txt for an example batchscript and some notes
             Previously, this repo was used:
@@ -507,7 +524,8 @@ class QualityAssessmentObject(OrganismData):
             :returns: a lookup to all of the batchscripts in the subdirectories above. This will be in job_scripts
         """
         if batchscript_lookup_full_path is None:
-            batchscript_lookup_full_path = os.path.join(self.job_scripts, 'igv_%s_%s.txt' % (self.year_month_day, utils.hourMinuteSecond()))
+            batchscript_lookup_full_path = os.path.join(self.job_scripts, 'igv_%s_%s.txt' % (
+            self.year_month_day, utils.hourMinuteSecond()))
         # get all paths from StandardData, etc
         organism_genome_files = os.path.join(self.genome_files, organism)
         if not os.path.isdir(organism_genome_files):
@@ -544,50 +562,59 @@ class QualityAssessmentObject(OrganismData):
         # Here, this is used to create the igvBatchScript rather than going through the extra step of writing a bed.
         bed_entry_dict = {}
         for index, row in metadata_df.iterrows():
-                genotype_list = utils.extractGenotypeList(row, convert_CNAG_to_CKF44=True) # last argument to convert CNAG to CKF44
-                if genotype_list[0] != 'CKF44_00000' and genotype_list[0] is not None:
-                    run_num = str(self.extractRunNumber(int(float(row["runNumber"])))) #TODO: this will hopefully be improved when database is integrated w/sql. no idea why runNumber column now comes out with inconsistent type. should just be string
-                    self.logger.debug("runnumber extracted by igv func: %s"%run_num)
-                    fastq_simple_name = utils.pathBaseName(row["fastqFileName"])
-                    alignment_run_directory_path = os.path.join(self.align_count_results, "run_%s_samples/align"%run_num)
-                    try:
-                        print("...looking for wildtype reference for %s" %fastq_simple_name)
-                        wt_reference_list = self.getWildtypeReference(row)
-                        wt_reference_bam_path = wt_reference_list[0] # item 1 is a list of the conditions -- use this to provide information in the subdir?
-                    except FileNotFoundError:
-                        self.logger.critical("No wildtype reference found for %s" %row)
-                    try:
-                        if not os.path.isfile(wt_reference_bam_path):
-                            raise FileNotFoundError
-                    except FileNotFoundError:
-                        self.logger.critical("path to wildtype reference DNE: %s" %wt_reference_bam_path)
-                    try:
-                        if not os.path.isdir(alignment_run_directory_path):
-                            raise NotADirectoryError("alignment_dir_DNE")
-                    except NotADirectoryError:
-                        self.logger.critical("%s DNE"%alignment_run_directory_path)
-                    bam_file_path = os.path.join(alignment_run_directory_path, fastq_simple_name+"_sorted_aligned_reads_with_annote.bam")
-                    try:
-                        if not os.path.isfile(bam_file_path):
-                            raise FileNotFoundError("bamDNE")
-                    except FileNotFoundError:
-                        self.logger.critical("%s DNE" %bam_file_path)
-                    try:
-                        if not (os.path.isfile(os.path.join(alignment_run_directory_path, fastq_simple_name+"_sorted_aligned_reads_with_annote.bam.bai"))):
-                            raise FileNotFoundError("baiDNE")
-                    except FileNotFoundError:
-                        self.logger.critical("%s index DNE" %bam_file_path)
+            genotype_list = utils.extractGenotypeList(row,
+                                                      convert_CNAG_to_CKF44=True)  # last argument to convert CNAG to CKF44
+            if genotype_list[0] != 'CKF44_00000' and genotype_list[0] is not None:
+                run_num = str(self.extractRunNumber(int(float(row[
+                                                                  "runNumber"]))))  # TODO: this will hopefully be improved when database is integrated w/sql. no idea why runNumber column now comes out with inconsistent type. should just be string
+                self.logger.debug("runnumber extracted by igv func: %s" % run_num)
+                fastq_simple_name = utils.pathBaseName(row["fastqFileName"])
+                alignment_run_directory_path = os.path.join(self.align_count_results, "run_%s_samples/align" % run_num)
+                try:
+                    print("...looking for wildtype reference for %s" % fastq_simple_name)
+                    wt_reference_list = self.getWildtypeReference(row)
+                    wt_reference_bam_path = wt_reference_list[
+                        0]  # item 1 is a list of the conditions -- use this to provide information in the subdir?
+                except FileNotFoundError:
+                    self.logger.critical("No wildtype reference found for %s" % row)
+                try:
+                    if not os.path.isfile(wt_reference_bam_path):
+                        raise FileNotFoundError
+                except FileNotFoundError:
+                    self.logger.critical("path to wildtype reference DNE: %s" % wt_reference_bam_path)
+                try:
+                    if not os.path.isdir(alignment_run_directory_path):
+                        raise NotADirectoryError("alignment_dir_DNE")
+                except NotADirectoryError:
+                    self.logger.critical("%s DNE" % alignment_run_directory_path)
+                bam_file_path = os.path.join(alignment_run_directory_path,
+                                             fastq_simple_name + "_sorted_aligned_reads_with_annote.bam")
+                try:
+                    if not os.path.isfile(bam_file_path):
+                        raise FileNotFoundError("bamDNE")
+                except FileNotFoundError:
+                    self.logger.critical("%s DNE" % bam_file_path)
+                try:
+                    if not (os.path.isfile(os.path.join(alignment_run_directory_path,
+                                                        fastq_simple_name + "_sorted_aligned_reads_with_annote.bam.bai"))):
+                        raise FileNotFoundError("baiDNE")
+                except FileNotFoundError:
+                    self.logger.critical("%s index DNE" % bam_file_path)
 
-                    # create this dictionary to error check and exit if there is a problem. Do not go onto creating batchfiles until this step has passed.
-                    bed_line_list = self.createIgvBedLine(genotype_list, annotation_file, gene_offset)
-                    # fill bed_entry_dict
-                    # TODO: THE FASTQFILES NEED TO BE CHECKED WELL BEFORE THIS -- DO SO AND GET RID OF THE REDUNDANT LOOP HERE
-                    try:
-                        if fastq_simple_name in bed_entry_dict.keys():
-                            raise KeyError
-                        bed_entry_dict[fastq_simple_name] = {"perturbed_genotype": genotype_list, "igv_genome": igv_genome, "perturbed_bam": bam_file_path, "wt_bam": wt_reference_bam_path, "perturbed_bed_list": bed_line_list}
-                    except KeyError:
-                        sys.exit("There is a repeated fastqFileName in the metadata. This is a problem -- fix it. Either deduplicate the metadata, or figure out why a fastq is identified in two different records")
+                # create this dictionary to error check and exit if there is a problem. Do not go onto creating batchfiles until this step has passed.
+                bed_line_list = self.createIgvBedLine(genotype_list, annotation_file, gene_offset)
+                # fill bed_entry_dict
+                # TODO: THE FASTQFILES NEED TO BE CHECKED WELL BEFORE THIS -- DO SO AND GET RID OF THE REDUNDANT LOOP HERE
+                try:
+                    if fastq_simple_name in bed_entry_dict.keys():
+                        raise KeyError
+                    bed_entry_dict[fastq_simple_name] = {"perturbed_genotype": genotype_list, "igv_genome": igv_genome,
+                                                         "perturbed_bam": bam_file_path,
+                                                         "wt_bam": wt_reference_bam_path,
+                                                         "perturbed_bed_list": bed_line_list}
+                except KeyError:
+                    sys.exit(
+                        "There is a repeated fastqFileName in the metadata. This is a problem -- fix it. Either deduplicate the metadata, or figure out why a fastq is identified in two different records")
 
         batchfile_list = []
         for sample_name, batch_file_dict in bed_entry_dict.items():
@@ -595,7 +622,8 @@ class QualityAssessmentObject(OrganismData):
             igv_output_subdir_path = os.path.join(igv_output_dir, sample_name)
             utils.mkdirp(igv_output_subdir_path)
             # make batchfile path
-            batchfile_list.extend(self.writeIgvBatchfile(igv_output_subdir_path, batch_file_dict, marker_dict=kn99_marker_dict))
+            batchfile_list.extend(
+                self.writeIgvBatchfile(igv_output_subdir_path, batch_file_dict, marker_dict=kn99_marker_dict))
 
         with open(batchscript_lookup_full_path, "w") as batchscript_lookup_file:
             batchscript_lookup_file.write("\n".join(batchfile_list))
@@ -603,7 +631,7 @@ class QualityAssessmentObject(OrganismData):
 
         return batchscript_lookup_full_path
 
-    def writeIgvBatchfile(self, output_dir, batch_file_dict, control_image=True, marker_dict = None):
+    def writeIgvBatchfile(self, output_dir, batch_file_dict, control_image=True, marker_dict=None):
         """
             yet another site to see for port commands for igv: https://software.broadinstitute.org/software/igv/PortCommands
             write a batch file -- see templates/igv_batchfile_example.txt
@@ -620,10 +648,10 @@ class QualityAssessmentObject(OrganismData):
         # this will be the first line of the batchscript
         # batchfile_text = ["snapshotDirectory %s\n" %output_dir,
         #                   "setSleepInterval 1000\n\n"]
-        batchfile_text_dict = {"perturbed":[], "control":[]} # may want to refractor this at some point to "control"
+        batchfile_text_dict = {"perturbed": [], "control": []}
 
         # note -- the value associated with "perturbed_genotype" needs to be passed as a list, even if only one item
-        #TODO: ERROR CHECK THAT THERE IS A BED LINE FOR EACH GENOTYPE
+        # TODO: ERROR CHECK THAT THERE IS A BED LINE FOR EACH GENOTYPE
         # create perturbed sample batchscript paragraph -- this will have two alignment files loaded. The top is the perturbed
         for genotype in batch_file_dict["perturbed_genotype"]:
             if genotype is not None:
@@ -631,17 +659,18 @@ class QualityAssessmentObject(OrganismData):
                 genotype_index = batch_file_dict["perturbed_genotype"].index(genotype)
                 bed_line = batch_file_dict["perturbed_bed_list"][genotype_index]
                 # note: same format as input to IGV viewer: chromosome:start-stop
-                perturbed_locus_bed_line = bed_line[0] + ":" +str(bed_line[1])+"-"+str(bed_line[2])
+                perturbed_locus_bed_line = bed_line[0] + ":" + str(bed_line[1]) + "-" + str(bed_line[2])
                 batchfile_text_dict["perturbed"].extend(["new\n",
                                                          "snapshotDirectory %s\n" % output_dir,
-                                                         "genome %s\n"%batch_file_dict["igv_genome"],
+                                                         "genome %s\n" % batch_file_dict["igv_genome"],
                                                          "maxPanelHeight 500\n",
                                                          "preference SAM.COLOR_BY READ_STRAND\n",
-                                                         "load %s\n"%batch_file_dict["perturbed_bam"],
-                                                         "goto %s\n"%perturbed_locus_bed_line,
+                                                         "load %s\n" % batch_file_dict["perturbed_bam"],
+                                                         "goto %s\n" % perturbed_locus_bed_line,
                                                          "sort position\n",
                                                          "collapse\n",
-                                                         "snapshot %s\n" %(genotype+".png") # TODO: ADD CONDITIONS OF SAMPLE
+                                                         "snapshot %s\n" % (genotype + ".png")
+                                                         # TODO: ADD CONDITIONS OF SAMPLE
                                                          ])
                 # write marker paragraphs for the batch scripts. note: unlike the perturbed sample, only the perturbed alignment file is used
                 if marker_dict:
@@ -649,24 +678,26 @@ class QualityAssessmentObject(OrganismData):
                         marker = re.sub("^CNAG_", "",
                                         marker)  # TODO: this is purpose built for KN99 right now -- figure out how to generalize
                         # note: same format as input to IGV viewer: chromosome:start-stop
-                        marker_bed_line = marker_bed_line[0] + ":" + str(marker_bed_line[1]) + "-" + str(marker_bed_line[2])
+                        marker_bed_line = marker_bed_line[0] + ":" + str(marker_bed_line[1]) + "-" + str(
+                            marker_bed_line[2])
                         batchfile_text_dict["perturbed"].extend(["goto %s\n" % marker_bed_line,
-                                               "sort position\n",
-                                               "collapse\n",
-                                               "snapshot %s\n" % (marker + ".png")
-                                               ])
+                                                                 "sort position\n",
+                                                                 "collapse\n",
+                                                                 "snapshot %s\n" % (marker + ".png")
+                                                                 ])
                 batchfile_text_dict["perturbed"].extend(["exit\n\n"])
                 if control_image:
                     batchfile_text_dict["control"].extend(["new\n",
                                                            "snapshotDirectory %s\n" % output_dir,
-                                                           "genome %s\n"%batch_file_dict["igv_genome"],
+                                                           "genome %s\n" % batch_file_dict["igv_genome"],
                                                            "maxPanelHeight 500\n",
                                                            "preference SAM.COLOR_BY READ_STRAND\n",
                                                            "load %s\n" % batch_file_dict["wt_bam"],
-                                                           "goto %s\n"%perturbed_locus_bed_line,
+                                                           "goto %s\n" % perturbed_locus_bed_line,
                                                            "sort position\n",
                                                            "collapse\n",
-                                                           "snapshot %s\n" %("%s_control.png"%genotype) # TODO: RENAME WITH CONDITIONS OF WT
+                                                           "snapshot %s\n" % ("%s_control.png" % genotype)
+                                                           # TODO: RENAME WITH CONDITIONS OF WT
                                                            ])
                     batchfile_text_dict["control"].extend(["exit\n\n"])
         # write out
@@ -680,14 +711,14 @@ class QualityAssessmentObject(OrganismData):
             sample_genotype = batch_file_dict["perturbed_genotype"]
         # create list to store list of filenames to batchfiles
         igv_batchfilename_list = []
-        for key, batchfile_text in batchfile_text_dict.items(): #poorly named -- batchfile_text_dict too close to batch_file_dict
+        for key, batchfile_text in batchfile_text_dict.items():  # poorly named -- batchfile_text_dict too close to batch_file_dict
             # as long as there is something to write
             if len(batchfile_text) > 0:
                 # create a filename
-                igv_batchfilename = os.path.join(output_dir, "".join(sample_genotype)+'_'+key+".txt")
+                igv_batchfilename = os.path.join(output_dir, "".join(sample_genotype) + '_' + key + ".txt")
                 # append the filename
                 igv_batchfilename_list.append(igv_batchfilename)
-                print("...writing batchfile to %s" %igv_batchfilename)
+                print("...writing batchfile to %s" % igv_batchfilename)
                 with open(igv_batchfilename, "w") as batchfile:
                     batchfile.write("".join(batchfile_text))
 
@@ -707,7 +738,7 @@ class QualityAssessmentObject(OrganismData):
             :params genotype_list: genotype list, [genotype1, genotype2]. if single ko, [genotype1, None]
             :returns: a list of lists in the format specified above. If single KO, [line1, None]
         """
-        bed_line_list=[]
+        bed_line_list = []
         for gene in genotype_list:
             if gene is not None and gene != "CNAG_00000":
                 # get first column corresponding to given gene, take uniq value as chromosome
@@ -731,7 +762,8 @@ class QualityAssessmentObject(OrganismData):
 
         return bed_line_list
 
-    def createAndSubmitIgvSbatchScript(self, lookup_file_path, output_dir, igv_mem="10000", igv_path="/opt/apps/igv/2.4.7/igv.jar"): #TODO: USE THE IGV IN THE LAB /OPT /opt/apps/labs/mblab/software/IGV_Linux_2.8.13/lib/igv.jar # working igv: /opt/apps/igv/2.4.7/igv.jar
+    def createAndSubmitIgvSbatchScript(self, lookup_file_path, output_dir, igv_mem="10000",
+                                       igv_path="/opt/apps/igv/2.4.7/igv.jar"):  # TODO: USE THE IGV IN THE LAB /OPT /opt/apps/labs/mblab/software/IGV_Linux_2.8.13/lib/igv.jar # working igv: /opt/apps/igv/2.4.7/igv.jar
         """
             create sbatch script -- there is an of batchscripts in templates (though there may not be one of this exactly if i forget to put it there. feel free to write an issues report)
             :params lookup_file_path: a list of batchscript files
@@ -752,7 +784,8 @@ class QualityAssessmentObject(OrganismData):
         # write sbatch job. see https://htcfdocs.readthedocs.io/en/latest/runningjobs/
         line_count_cmd = 'cat %s | wc -l' % lookup_file_path
         line_count = int(subprocess.getoutput(line_count_cmd))
-        sbatch_array_line = "--array=1-{}%{}".format(line_count, min(line_count, 20))#this has to be 1 at a time since the WT may be the same for multiple samples
+        sbatch_array_line = "--array=1-{}%{}".format(line_count, min(line_count,
+                                                                     20))  # this has to be 1 at a time since the WT may be the same for multiple samples
         job = '#!/bin/bash\n\n' \
               '#SBATCH -N 1\n' \
               '#SBATCH --mem=20G\n' \
@@ -761,8 +794,9 @@ class QualityAssessmentObject(OrganismData):
               '#SBATCH -J igv_snapshot\n\n' \
               'module load java\n\n' \
               'read igv_batchfile < <(sed -n ${SLURM_ARRAY_TASK_ID}p %s )\n\n' \
-              'xvfb-run --auto-servernum --server-num=1 java -Xmx%sm -jar %s -b ${igv_batchfile}\n'\
-              % (sbatch_array_line, self.sbatch_log, self.year_month_day, utils.hourMinuteSecond(), lookup_file_path, igv_mem, igv_path)
+              'xvfb-run --auto-servernum --server-num=1 java -Xmx%sm -jar %s -b ${igv_batchfile}\n' \
+              % (sbatch_array_line, self.sbatch_log, self.year_month_day, utils.hourMinuteSecond(), lookup_file_path,
+                 igv_mem, igv_path)
 
         # write to file
         # check that a job_scripts directory for igv for today has been created, make one if no
@@ -770,7 +804,8 @@ class QualityAssessmentObject(OrganismData):
         if not os.path.isdir(os.path.join(job_script_dir_path)):
             utils.mkdirp(job_script_dir_path)
 
-        igv_job_script_path = os.path.join(job_script_dir_path, 'igv_%s_%s.sbatch' % (self.year_month_day, utils.hourMinuteSecond()))
+        igv_job_script_path = os.path.join(job_script_dir_path,
+                                           'igv_%s_%s.sbatch' % (self.year_month_day, utils.hourMinuteSecond()))
         with open(igv_job_script_path, 'w') as igv_job_script_file:
             igv_job_script_file.write(job)
 
@@ -890,8 +925,9 @@ class QualityAssessmentObject(OrganismData):
                 bamfilename_path, annotation_file, output_subdir)
             cmd_list.append(qorts_cmd)
 
-        sbatch_script = os.path.join(self.job_scripts, 'qorts_job_script_' + self.year_month_day + '_' + utils.hourMinuteSecond() + '.sbatch')
-        print('writing job script to %s' %sbatch_script)
+        sbatch_script = os.path.join(self.job_scripts,
+                                     'qorts_job_script_' + self.year_month_day + '_' + utils.hourMinuteSecond() + '.sbatch')
+        print('writing job script to %s' % sbatch_script)
         with open(sbatch_script, 'w') as sbatch_file:
             sbatch_file.write('\n')
             sbatch_file.write('\n')

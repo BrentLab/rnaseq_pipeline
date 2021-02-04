@@ -58,9 +58,9 @@ main = function(args){
 parseArguments = function() {
   option_list = list(
     make_option(c('-r', '--raw_counts'),
-                help='raw count matrix produced by raw_counts.py'),
+                help='[REQUIRED]raw count matrix produced by raw_counts.py'),
     make_option(c('-g', '--organism'),
-                 help='Currently, this only matters for KN99 (with that exact formatting). If not KN99, enter None'))
+                 help='[REQUIRED]Either KN99 or None (if your sample is KN99, you must enter KN99)'))
   args = parse_args(OptionParser(option_list=option_list))
   return(args)
 } # end parseArguments()

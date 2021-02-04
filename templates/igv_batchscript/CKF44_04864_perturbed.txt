@@ -1,0 +1,20 @@
+new
+snapshotDirectory /scratch/mblab/chasem/rnaseq_pipeline/reports/igv_20201222_124223/1800_Brent_4_CACCTCC_S4_R1_001
+genome /scratch/mblab/chasem/rnaseq_pipeline/genome_files/KN99/KN99_stranded.genome
+maxPanelHeight 500
+preference SAM.COLOR_BY READ_STRAND
+load /scratch/mblab/chasem/rnaseq_pipeline/align_count_results/run_1800_samples/align/1800_Brent_4_CACCTCC_S4_R1_001_sorted_aligned_reads_with_annote.bam
+goto CP022330.1:172617-178265
+sort position
+collapse
+snapshot CKF44_04864.png
+goto NAT:1-2150
+sort position
+collapse
+snapshot NAT.png
+goto G418:1-3065
+sort position
+collapse
+snapshot G418.png
+exit
+
