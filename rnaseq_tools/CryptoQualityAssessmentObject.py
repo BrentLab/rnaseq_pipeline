@@ -458,7 +458,7 @@ class CryptoQualityAssessmentObject(QualityAssessmentObject):
                                                                                            bam_file, g418_bases_in_cds)
 
             # if deletion, calculate coverage. Currently only set to check genotype1. assumes both are deletions if perturbation1 == 'deletion'
-            if row['perturbation1'] == "deletion":
+            if row['perturbation1'] == "deletion" or row['perturbation1'] == "geneSwap":
                 try:
                     # extract genotype1 TODO: JUST CASE EVERYTHING TO UPPER EARLIER
                     genotype = [self.extractInfoFromQuerySheet(row['fastqFileName'], 'genotype1'), None]
