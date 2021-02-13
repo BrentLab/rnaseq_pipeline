@@ -183,6 +183,8 @@ process postHtseqCountsToDatabase {
     #!/usr/bin/env python
 
     import pandas as pd
+    import requests
+    import json
     from rnaseq_tools import utils
     from rnaseq_tools.StandardDataObject import StandardData
     sd = StandardData(interactive=True)
