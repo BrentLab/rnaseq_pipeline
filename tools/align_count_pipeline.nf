@@ -216,7 +216,7 @@ process postHtseqCountsToDatabase {
     data = {'fastqFileNumber': "${fastq_file_number}", 'rawCounts': json.dumps(count_dict)}
 
     # TODO: make this a parameter
-    url = 'http://13.59.167.2/api/Counts/'
+    url = 'http://13.59.167.2/api/Counts'
 
     try:
         utils.postData(url, data, sd.logger)
