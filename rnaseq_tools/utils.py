@@ -706,7 +706,7 @@ def extractRunNumber(query_df_row):
     raise NotImplementedError
 
 
-def postData(url, data, **kwargs):
+def postData(url, data, logger, **kwargs):
     """
         pass in a keyword argument {key: (int)} to put (update) a entry. otherwise, post
         :params url: url to the site (this should be complete, eg to update counts http://13.59.167.2/api/Counts) NOTE: pass this url, no id, etc, and use the kwargs option for a put
@@ -714,11 +714,13 @@ def postData(url, data, **kwargs):
         :params kwargs: See description for handled kwargs
         :throws: HTTPError
     """
+    # logger.info('url: %s, data: %s' %(url, data))
 
     try:
         key = kwargs['key']
         r = requests.put(os.path.join(url, "%s/" % key), data=data)
         r.raise_for_status()
-    except KeyError:
+    except (KeyError, NameError):
+        logger.info("posting data")
         r = requests.post(url, data=data)
         r.raise_for_status()
