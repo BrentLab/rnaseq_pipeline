@@ -189,7 +189,7 @@ process postHtseqCountsToDatabase {
     # TODO: SET PARAMS FOR OVERWRITE = T/F AND ALTERNATE BTWN PUT/POST DEPENDING ON ERROR RESPONSE
 
     # read count_file in as pandas df
-    count_file_df = pd.read_csv(path, sep='\t', names=['htseq_col', "${fastq_simple_name}"])
+    count_file_df = pd.read_csv("${read_count_tsv}", sep='\t', names=['htseq_col', "${fastq_simple_name}"])
 
     # remove the htseq stuff at the bottom of the file (it starts with __, eg __ambiguous)
     gene_counts = count_file_df[~count_file_df.htseq_col.str.startswith("__")]
