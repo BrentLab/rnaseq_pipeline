@@ -185,8 +185,18 @@ process postHtseqCountsToDatabase {
     import pandas as pd
     import requests
     import json
+    from urllib.request import HTTPError
     from rnaseq_tools import utils
     from rnaseq_tools.StandardDataObject import StandardData
+
+    #from urllib.request import urlopen, HTTPError
+    #try:
+    #html = urlopen('http://www.test.com')
+    #except HTTPError as e:
+    #print(e)
+    #else:
+    #print('its ok')
+
     sd = StandardData(interactive=True)
     # TODO: SET PARAMS FOR OVERWRITE = T/F AND ALTERNATE BTWN PUT/POST DEPENDING ON ERROR RESPONSE
 
@@ -209,7 +219,7 @@ process postHtseqCountsToDatabase {
     url = 'http://13.59.167.2/api/Counts/'
 
     try:
-        utils.postData(url, data)
+        utils.postData(url, data, sd.logger)
     except(HTTPError):
         sd.logger.warning('COUNTS http post failed on fastq: %s, fastqfilenumber: %s' %("${fastq_simple_name}", "${fastq_file_number}"))
     """
