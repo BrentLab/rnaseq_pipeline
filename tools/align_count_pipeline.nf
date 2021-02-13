@@ -195,7 +195,7 @@ process postHtseqCountsToDatabase {
     gene_counts = count_file_df[~count_file_df.htseq_col.str.startswith("__")]
 
     # maybe push this into its own channel?
-    htseq_log_data = count_file_df[count_file_df.gene_id.str.startswith("__")] # TODO: SEND THIS INTO HTSEQ QC CHANNEL? Handle here?
+    htseq_log_data = count_file_df[count_file_df.htseq_col.str.startswith("__")] # TODO: SEND THIS INTO HTSEQ QC CHANNEL? Handle here?
 
     # get the count dict in structure {fastqFileName: [counts]}
     count_dict = df.drop(['htseq_col'], axis=1).to_dict(orient="list")
