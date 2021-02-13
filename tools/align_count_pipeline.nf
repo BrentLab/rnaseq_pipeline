@@ -198,7 +198,7 @@ process postHtseqCountsToDatabase {
     htseq_log_data = count_file_df[count_file_df.htseq_col.str.startswith("__")] # TODO: SEND THIS INTO HTSEQ QC CHANNEL? Handle here?
 
     # get the count dict in structure {fastqFileName: [counts]}
-    count_dict = df.drop(['htseq_col'], axis=1).to_dict(orient="list")
+    count_dict = count_file_df.drop(['htseq_col'], axis=1).to_dict(orient="list")
 
     # this is the body of the request. fastqFileNumber is the foreign key of Counts
     data = {'fastqFileNumber': "${fastq_file_number}", 'rawCounts': json.dumps(count_dict)}
