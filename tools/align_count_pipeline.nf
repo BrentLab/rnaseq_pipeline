@@ -4,7 +4,7 @@
 Channel
     .fromPath(params.fastq_file_list)
     .splitCsv(header:true)
-    .map{row-> tuple(row.runDirectory, file(row.fastqFileName), row.organism, row.strandedness) }
+    .map{row-> tuple(row.runDirectory, file(row.fastqFileName), row.organism, row.strandedness, row.fastqFileNumber) }
     .set { fastq_filelist }
 
 
@@ -25,7 +25,7 @@ process novoalign {
     input:
         tuple val(run_directory), file(fastq_file), val(organism), val(strandedness) from fastq_filelist
     output:
-        tuple val(run_directory), val(fastq_simple_name), val(organism), val(strandedness), file("${fastq_simple_name}_sorted_aligned_reads.bam") into bam_align_ch
+        tuple val(fastq_file_number), val(run_directory), val(fastq_simple_name), val(organism), val(strandedness), file("${fastq_simple_name}_sorted_aligned_reads.bam") into bam_align_ch
         tuple val(run_directory), file("${fastq_simple_name}_novoalign.log"), file("${fastq_simple_name}_novosort.log") into novoalign_log_ch
 
     script:
@@ -93,7 +93,7 @@ process htseq_count {
         tuple val(run_directory), val(fastq_simple_name), val(organism), val(strandedness), file(sorted_bam) from bam_align_ch
     output:
         tuple val(run_directory), val(fastq_simple_name), val(organism), val(strandedness), file("${fastq_simple_name}_sorted_aligned_reads_with_annote.bam") into bam_align_with_htseq_annote_ch
-        tuple val(run_directory), val(fastq_simple_name), file("${fastq_simple_name}_read_count.tsv") into htseq_count_ch
+        tuple val(fastq_file_number), val(run_directory), val(fastq_simple_name), file("${fastq_simple_name}_read_count.tsv") into htseq_count_ch
         tuple val(run_directory), val(fastq_simple_name), file("${fastq_simple_name}_htseq.log") into htseq_log_ch
         tuple val(run_directory), val(organism), val(strandedness) into pipeline_info_ch
 
@@ -168,6 +168,52 @@ process htseq_count {
             samtools view --threads 8 -bS -T ${params.H99_genome} > ${fastq_simple_name}_sorted_aligned_reads_with_annote.bam
 
             """
+}
+
+process postHtseqCountsToDatabase {
+
+    executor "local"
+    beforeScript "ml rnaseq_pipeline"
+
+    input:
+        tuple val(fastq_file_number), val(run_directory), val(fastq_simple_name), file(read_count_tsv) from htseq_count_ch
+
+    script:
+    """
+    /usr/bin/env python
+
+    import pandas as pd
+    from rnaseq_tools import utils
+    from rnaseq_tools.StandardDataObject import StandardData
+    sd = StandardData(interactive=True)
+    # TODO: SET PARAMS FOR OVERWRITE = T/F AND ALTERNATE BTWN PUT/POST DEPENDING ON ERROR RESPONSE
+
+    # read count_file in as pandas df
+    count_file_df = pd.read_csv(path, sep='\t', names=['htseq_col', "${fastq_simple_name}"])
+
+    # remove the htseq stuff at the bottom of the file (it starts with __, eg __ambiguous)
+    gene_counts = count_file_df[~count_file_df.htseq_col.str.startswith("__")]
+
+    # maybe push this into its own channel?
+    htseq_log_data = count_file_df[count_file_df.gene_id.str.startswith("__")] # TODO: SEND THIS INTO HTSEQ QC CHANNEL? Handle here?
+
+    # get the count dict in structure {fastqFileName: [counts]}
+    count_dict = df.drop(['htseq_col'], axis=1).to_dict(orient="list")
+
+    # this is the body of the request. fastqFileNumber is the foreign key of Counts
+    data = {'fastqFileNumber': "${fastq_file_number}", data = json.dumps(count_dict)}
+
+    # TODO: make this a parameter
+    url = 'http://13.59.167.2/api/Counts/'
+
+    try:
+        utils.postData(url, data)
+    except(HTTPError):
+        sd.logger.warning('COUNTS http post failed on fastq: %s, fastqfilenumber: %s' %("${fastq_simple_name}", "${fastq_file_number}"))
+    """
+
+
+
 }
 
 process writePipelineInfo {

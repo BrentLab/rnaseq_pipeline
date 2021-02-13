@@ -44,6 +44,7 @@ def main(argv):
     db.query_df['strandedness'] = np.where(db.query_df['libraryDate'] > '2015-10-25', 'reverse', 'no')
     # add leading zero to runNumber, if necessary -- take care of in loop
     db.query_df['runNumber'] = db.query_df['runNumber'].astype(str)
+    db.query_df['fastqFileNumber'] = db.query_df['fastqFileNumber'].astype(str)
     # new dictionary to store run_directory in dataframe
     run_directory_list = []
     for index, row in db.query_df.iterrows():
@@ -91,7 +92,7 @@ def main(argv):
     s288c_r64_genome = s288c_r64_organism_data.genome
 
     # filter
-    nextflow_fastqfile_df = db.query_df[['runDirectory', 'fastqFileName', 'organism', 'strandedness']]
+    nextflow_fastqfile_df = db.query_df[['runDirectory', 'fastqFileName', 'organism', 'strandedness', 'fastqFileNumber']]
     for index, row in nextflow_fastqfile_df.iterrows():
         try:
             if not os.path.isfile(row['fastqFileName']):

@@ -12,6 +12,7 @@ import time
 import logging
 import logging.config
 import math
+import requests
 
 
 def getRunNumber(fastq_path):
@@ -560,6 +561,7 @@ def logit2probability(log_odds):
     # return probability
     return odds / float(1 + odds)
 
+
 def twoParameterGlmTemplate(intercept, coefficient_1, coefficient_2):
     """
         factory function to create a two parameter glm formula.
@@ -572,17 +574,19 @@ def twoParameterGlmTemplate(intercept, coefficient_1, coefficient_2):
         :params coefficient_2: second coefficient of the model you wish to create
         :returns: a two parameter glm with the intercept and two coefficients
     """
+
     # define a specific instance of a two parameter glm
     def twoParameterGlm(x_1, x_2):
         if not testNumeric(x_1):
-            raise ValueError('VariablesNonNumeric %s' %x_1)
+            raise ValueError('VariablesNonNumeric %s' % x_1)
         if not testNumeric(x_2):
-            raise ValueError('VariablesNonNumeric %s' %x_2)
+            raise ValueError('VariablesNonNumeric %s' % x_2)
         x_1 = float(x_1)
         x_2 = float(x_2)
-        return intercept + (coefficient_1*x_1) + (coefficient_2*x_2)
+        return intercept + (coefficient_1 * x_1) + (coefficient_2 * x_2)
 
     return twoParameterGlm
+
 
 def testNumeric(var):
     """
@@ -596,6 +600,7 @@ def testNumeric(var):
         return True
     else:
         return False
+
 
 # def writeSamtoolsIndexSbatchScript(self): #TODO: update for nextflow pipeline (different bam file suffix, should already have .bai)
 #     """
@@ -638,6 +643,7 @@ def convertFastqFilename(fastq_filename, filetype):
     fastq_basename = pathBaseName(fastq_filename)
     return fastq_basename + suffix_dict[filetype]
 
+
 def extractInfoFromQuerySheet(query_df, fastq_filename, extract_column):
     """
         extract information from query sheet given sample_name from qual_assess_df (which is the basename, no ext, of the fastq.gz)
@@ -649,26 +655,30 @@ def extractInfoFromQuerySheet(query_df, fastq_filename, extract_column):
     # remove rows containing NaN in fastqFileName
     tmp_query_df = query_df[~query_df.fastqFileName.isnull()]
     try:
-        extract_value = list(tmp_query_df[tmp_query_df['fastqFileName'].str.contains(fastq_filename)][extract_column])[0]
+        extract_value = list(tmp_query_df[tmp_query_df['fastqFileName'].str.contains(fastq_filename)][extract_column])[
+            0]
     except AttributeError:
         print('You must pass a query df')
 
     return str(extract_value)
 
+
 def extractInfoFromQuerySheet(query_df, sample_name, extract_column):
-        """ TODO: THIS WAS REMOVED FROM ORGANISMDATA OR QUALITY ASSESSMENT...DON'T REMEMBER...BUT IT NEEDS TO BE UPDATED IN THE REST OF THE CODEBASE TO USE THIS IN UTILS NOW (AND HANDLE ERRORS IN CALLING SCRIPT)
-            extract information from query sheet given sample_name from qual_assess_df (which is the basename, no ext, of the fastq.gz)
-            :param sample_name: name of sample -- basename of fastq.gz, no containing directory, no extension
-            :param extract_column: column from which to extract a value from the query_df based on sample_name
-            :returns: value extracted from query_df based on sample name and extract column
-        """
-        try:
-            extract_value = list(query_df[query_df['fastqFileName'].str.contains(sample_name + '.fastq.gz')][extract_column])[
+    """ TODO: THIS WAS REMOVED FROM ORGANISMDATA OR QUALITY ASSESSMENT...DON'T REMEMBER...BUT IT NEEDS TO BE UPDATED IN THE REST OF THE CODEBASE TO USE THIS IN UTILS NOW (AND HANDLE ERRORS IN CALLING SCRIPT)
+        extract information from query sheet given sample_name from qual_assess_df (which is the basename, no ext, of the fastq.gz)
+        :param sample_name: name of sample -- basename of fastq.gz, no containing directory, no extension
+        :param extract_column: column from which to extract a value from the query_df based on sample_name
+        :returns: value extracted from query_df based on sample name and extract column
+    """
+    try:
+        extract_value = \
+            list(query_df[query_df['fastqFileName'].str.contains(sample_name + '.fastq.gz')][extract_column])[
                 0]
-        except AttributeError:
-            raise AttributeError # TODO: CLEAN THIS -- I JUST REMOVED THE LOGGER STATEMENT WHILE DEBUGGING IGVSHOTS
-        else:
-            return str(extract_value)
+    except AttributeError:
+        raise AttributeError  # TODO: CLEAN THIS -- I JUST REMOVED THE LOGGER STATEMENT WHILE DEBUGGING IGVSHOTS
+    else:
+        return str(extract_value)
+
 
 def extractGenotypeList(query_df_row, genotype_columns=["genotype1", "genotype2"], convert_CNAG_to_CKF44=False):
     """
@@ -682,10 +692,11 @@ def extractGenotypeList(query_df_row, genotype_columns=["genotype1", "genotype2"
         for i in range(len(genotype_list)):
             try:
                 genotype_list[i] = genotype_list[i].replace("CNAG", "CKF44")
-            except AttributeError: # this is to catch the case in which genotype[1] is none. TODO: should have more error checking in this function
+            except AttributeError:  # this is to catch the case in which genotype[1] is none. TODO: should have more error checking in this function
                 pass
 
     return list(genotype_list)
+
 
 def extractRunNumber(query_df_row):
     """
@@ -693,3 +704,21 @@ def extractRunNumber(query_df_row):
     """
     # TODO SEE STANDARD DATA -- ALREADY IMPLEMENTED
     raise NotImplementedError
+
+
+def postData(url, data, **kwargs):
+    """
+        pass in a keyword argument {key: (int)} to put (update) a entry. otherwise, post
+        :params url: url to the site (this should be complete, eg to update counts http://13.59.167.2/api/Counts) NOTE: pass this url, no id, etc, and use the kwargs option for a put
+        :params data: the body of the request
+        :params kwargs: See description for handled kwargs
+        :throws: HTTPError
+    """
+
+    try:
+        key = kwargs['key']
+        r = requests.put(os.path.join(url, "%s/" % key), data=data)
+        r.raise_for_status()
+    except KeyError:
+        r = requests.post(url, data=data)
+        r.raise_for_status()
