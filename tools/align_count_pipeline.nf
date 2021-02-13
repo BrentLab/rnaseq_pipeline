@@ -201,7 +201,7 @@ process postHtseqCountsToDatabase {
     count_dict = df.drop(['htseq_col'], axis=1).to_dict(orient="list")
 
     # this is the body of the request. fastqFileNumber is the foreign key of Counts
-    data = {'fastqFileNumber': "${fastq_file_number}", data = json.dumps(count_dict)}
+    data = {'fastqFileNumber': "${fastq_file_number}", 'rawCounts': json.dumps(count_dict)}
 
     # TODO: make this a parameter
     url = 'http://13.59.167.2/api/Counts/'
