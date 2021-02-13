@@ -180,7 +180,7 @@ process postHtseqCountsToDatabase {
 
     script:
     """
-    /usr/bin/env python
+    #!/usr/bin/env python
 
     import pandas as pd
     from rnaseq_tools import utils
