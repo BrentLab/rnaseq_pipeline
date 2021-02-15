@@ -12,7 +12,6 @@ scratch_sequence = file(params.scratch_sequence)
 
 process novoalign {
 
-    scratch true
     executor "slurm"
     cpus 8
     memory "20G"
@@ -77,7 +76,6 @@ process novoalign {
 
 process htseq_count {
 
-    scratch true
     executor "slurm"
     cpus 8
     memory "20G"
