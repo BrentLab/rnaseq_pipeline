@@ -345,8 +345,7 @@ class QualityAssessmentObject(OrganismData):
         """
         raise NotImplementedError
 
-    def calculatePercentFeatureCoverage(self, feature, genotype, annotation_path, bam_file, read_strand=None,
-                                        num_bases_in_region=None):
+    def calculatePercentFeatureCoverage(self, feature, genotype, annotation_path, bam_file, num_bases_in_region=None, read_strand=None):
         """
             Calculate percent of given feature (regions summed, so all exon in gene, eg) of a gene (exon, CDS, etc) covered by 1 or more reads
             :param feature: annotation feature over which to take percentage, eg all exons in gene, or all CDS
