@@ -72,8 +72,8 @@ class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
                 genotype2 = None
             genotype = [genotype1, genotype2]
             # marker_1 and marker_2 will be either NAT or G418, depending on what is expected, or NA
-            marker_1 = self.extractInfoFromQuerySheet(fastq_simple_name, 'marker_1')
-            marker_2 = self.extractInfoFromQuerySheet(fastq_simple_name, 'marker_2')
+            marker_1 = self.extractInfoFromQuerySheet(fastq_simple_name, 'marker1')
+            marker_2 = self.extractInfoFromQuerySheet(fastq_simple_name, 'marker2')
 
             # extract quality_assessment_metrics
             library_protein_coding_total = int(row['PROTEIN_CODING_TOTAL'])
