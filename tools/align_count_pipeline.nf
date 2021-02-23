@@ -15,7 +15,7 @@ process novoalign {
     executor "slurm"
     cpus 8
     memory "20G"
-    beforeScript "ml novoalign samtools"
+    beforeScript "ml novoalign/3.09.01 samtools"
     stageInMode "copy"
     stageOutMode "move"
     publishDir "$params.align_count_results/$run_directory/logs", mode:"copy", overwite: true, pattern: "*.log"
@@ -79,7 +79,7 @@ process htseq_count {
     executor "slurm"
     cpus 8
     memory "20G"
-    beforeScript "ml samtools htseq"
+    beforeScript "ml samtools htseq/0.9.1"
     stageInMode "copy"
     stageOutMode "move"
     publishDir "$params.align_count_results/$run_directory/logs", mode:"copy", overwite: true, pattern: "*.log"
