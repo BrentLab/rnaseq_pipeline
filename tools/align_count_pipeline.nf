@@ -14,7 +14,7 @@ process novoalign {
 
     executor "slurm"
     cpus 8
-    memory "20G"
+    memory "30G"
     beforeScript "ml novoalign/3.09.01 samtools"
     stageInMode "copy"
     stageOutMode "move"

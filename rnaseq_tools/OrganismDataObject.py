@@ -99,7 +99,7 @@ class OrganismData(StandardData):
 
         return count_df
 
-    def getWildtypeReference(self, metadata_df_row, sample_condition_columns = ['libraryDate', 'other_conditions', 'treatment', 'timePoint', 'atmosphere', 'temperature', 'medium']):
+    def getWildtypeReference(self, metadata_df_row, sample_condition_columns = ['libraryDate', 'otherConditions', 'treatment', 'timePoint', 'atmosphere', 'temperature', 'medium']):
         """
             extract most appropriate wildtype reference for sample
             :params sample_condition_columns: conditions on which to filter IN INCREASING LEVEL OF IMPORTANCE.
