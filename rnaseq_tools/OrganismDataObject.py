@@ -112,7 +112,10 @@ class OrganismData(StandardData):
         wt_by_condition = pd.read_csv(self.wt_by_condition_path)
         wt_by_condition = wt_by_condition.fillna(-1)
         # extract condition information (fill nas w/ -1)
-        this_sample_conditions = list(metadata_df_row.fillna(-1)[sample_condition_columns])
+        try:
+            this_sample_conditions = list(metadata_df_row.fillna(-1)[sample_condition_columns])
+        except Exception as e:
+            sys.exit("eror with contition: %s" %this_sample_conditions)
         # dictionary with keys that are 0:number_of_conditions-1 and entries None.
         # These will be filled with a wildtype sample that meets iteratively decreasing number of conditions from sample_condition_columns
         wt_options_dict = dict(zip(range(len(sample_condition_columns)), repeat(None)))
