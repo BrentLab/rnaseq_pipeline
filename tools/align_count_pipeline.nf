@@ -10,6 +10,8 @@ Channel
 
 scratch_sequence = file(params.scratch_sequence)
 
+htseq_count_feature = 'exon'
+
 process novoalign {
 
     executor "slurm"
@@ -119,7 +121,7 @@ process htseq_count {
             htseq-count -f bam \\
                         -o ${fastq_simple_name}_htseq_annote.sam \\
                         -s ${strandedness} \\
-                        -t exon \\
+                        -t ${htseq_count_feature} \\
                         -i gene \\
                         ${sorted_bam} \\
                         ${params.KN99_annotation_file} \\
@@ -137,7 +139,7 @@ process htseq_count {
             htseq-count -f bam \\
                         -o ${fastq_simple_name}_htseq_annote.sam \\
                         -s ${strandedness} \\
-                        -t exon \\
+                        -t ${htseq_count_feature} \\
                         -i gene \\
                         ${sorted_bam} \\
                         ${params.KN99_annotation_file_no_strand} \\

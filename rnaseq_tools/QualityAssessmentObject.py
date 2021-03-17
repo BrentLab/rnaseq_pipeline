@@ -564,8 +564,7 @@ class QualityAssessmentObject(OrganismData):
             genotype_list = utils.extractGenotypeList(row,
                                                       convert_CNAG_to_CKF44=True)  # last argument to convert CNAG to CKF44
             if genotype_list[0] != 'CKF44_00000' and genotype_list[0] is not None:
-                run_num = str(self.extractRunNumber(int(float(row[
-                                                                  "runNumber"]))))  # TODO: this will hopefully be improved when database is integrated w/sql. no idea why runNumber column now comes out with inconsistent type. should just be string
+                run_num = str(self.extractRunNumber(int(float(row["runNumber"]))))  # TODO: this will hopefully be improved when database is integrated w/sql. no idea why runNumber column now comes out with inconsistent type. should just be string
                 self.logger.debug("runnumber extracted by igv func: %s" % run_num)
                 fastq_simple_name = utils.pathBaseName(row["fastqFileName"])
                 alignment_run_directory_path = os.path.join(self.align_count_results, "run_%s_samples/align" % run_num)
