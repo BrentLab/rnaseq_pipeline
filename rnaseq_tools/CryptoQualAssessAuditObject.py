@@ -115,7 +115,7 @@ class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
 
             # test wildtypes for marker coverage and expression
             if genotype[0] == 'CNAG_00000':
-                if nat_coverage > self.nat_unexpected_coverage_threshold or nat_log2cpm > self.nat_unexpected_log2cpm_threshold:
+                if nat_coverage > self.nat_unexpected_coverage_threshold and nat_log2cpm > self.nat_unexpected_log2cpm_threshold:
                     status_total += self.nat_unexpected_marker_status
                 if g418_log2cpm > self.g418_log2cpm_threshold:
                     status_total += self.g418_unexpected_marker_status
@@ -135,7 +135,7 @@ class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
                         if g418_log2cpm < self.g418_log2cpm_threshold:
                             status_total += self.g418_expected_marker_status
                         # test coverage if single KO
-                        if (nat_coverage > self.nat_unexpected_coverage_threshold or nat_log2cpm > self.nat_unexpected_log2cpm_threshold) and genotype[1] == None:
+                        if (nat_coverage > self.nat_unexpected_coverage_threshold and nat_log2cpm > self.nat_unexpected_log2cpm_threshold) and genotype[1] == None:
                             status_total += self.nat_unexpected_marker_status
                     # TODO: THIS NEEDS TO BE FIXED FOR THE INSTANCE IN WHICH A SINGLE MARKER IS NOTED WITH BOTH MARKERS B/C OF MANUAL ENTRY (SEE STRAINS 2274 AND 1351)
                     # TEST THIS WITH THE STRAINS ABOVE
