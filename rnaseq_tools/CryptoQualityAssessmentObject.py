@@ -251,7 +251,7 @@ class CryptoQualityAssessmentObject(QualityAssessmentObject):
                 sample_temperature = self.extractInfoFromQuerySheet(sample_name, 'temperature')
                 sample_atmosphere = self.extractInfoFromQuerySheet(sample_name, 'atmosphere')
                 sample_timepoint = self.extractInfoFromQuerySheet(sample_name, 'timePoint')
-                perturbed_gene = genotype.replace('_over', '').replace('CNAG', 'CKF44')
+                perturbed_gene = genotype[0].replace('CNAG', 'CKF44') #TODO: THIS NEEDS TO BE CHANGED -- WHAT IF DOUBLE OVER?
                 # THIS NEEDS TO BE UPDATED WITH NEW MEDIAN_LOG2CPM BY WILDTYPE REPLICATE GROUPS WHEN TREATMENT COLUMNS ARE STABLE AGAIN
                 library_metadata_dict['OVEREXPRESSION_FOW'] = 0 #self.foldOverWildtype(perturbed_gene, sample_name, log2cpm_path, [sample_medium, sample_temperature, sample_atmosphere], sample_timepoint)
 
