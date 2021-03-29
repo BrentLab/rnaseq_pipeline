@@ -2,6 +2,7 @@ import configparser
 from rnaseq_tools import utils
 from rnaseq_tools.CryptoQualityAssessmentObject import CryptoQualityAssessmentObject
 import numpy as np
+import pandas as pd
 
 class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
 
@@ -129,7 +130,7 @@ class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
                     if marker_1 == 'NAT':
                         if nat_coverage < self.nat_expected_coverage_threshold or nat_log2cpm < self.nat_expected_log2cpm_threshold:
                             status_total += self.nat_expected_marker_status
-                        if g418_log2cpm > self.g418_log2cpm_threshold and genotype[1] != None:
+                        if g418_log2cpm > self.g418_log2cpm_threshold and genotype[1] == None:
                             status_total += self.g418_unexpected_marker_status
                     elif marker_1 == 'G418':
                         if g418_log2cpm < self.g418_log2cpm_threshold:
@@ -146,12 +147,12 @@ class CryptoQualAssessAuditObject(CryptoQualityAssessmentObject):
                                 self.logger.critical('%s has two NAT markers in the metadata' % fastq_simple_name)
                             if nat_coverage < self.nat_expected_coverage_threshold or nat_log2cpm < self.nat_expected_log2cpm_threshold:
                                 status_total += self.nat_expected_marker_status
-                            if g418_log2cpm > self.g418_log2cpm_threshold and genotype[1] == None:
-                                status_total += self.g418_unexpected_marker_status
+                            # if g418_log2cpm > self.g418_log2cpm_threshold and genotype[1] == None:
+                            #     status_total += self.g418_unexpected_marker_status
                         elif marker_2 == 'G418':
                             if marker_1 == 'G418':
                                 self.logger.critical('%s has two G418 markers in the metadata' % fastq_simple_name)
-                            if g418_log2cpm < self.g418_log2cpm_threshold and genotype[1] == None:
+                            if g418_log2cpm < self.g418_log2cpm_threshold:
                                 status_total += self.g418_expected_marker_status
                             # if nat_coverage > unexpected_nat_coverage_threshold or nat_log2cpm > unexpected_nat_log2cpm_threshold:
                             #     status_total += nat_unexpected_marker_status
